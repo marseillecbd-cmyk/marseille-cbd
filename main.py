@@ -1,56 +1,31 @@
 import os
-import csv
-from datetime import datetime
 import requests
-from flask import Flask, request, render_template_string
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# Configurations de tes clés Telegram
-TELEGRAM_TOKEN = "8929246651:AAFSqQ_k4Wi5GIOl3a773czmfcenO_jWrAc"
-CHAT_ID = "6141877001"
+# Configuration de ton bot Telegram
+TOKEN = "7294970428:AAHTX_0A-X9y20lQjI2W8HjO_Z4yU4_8f9I"  # Ton token actuel
+CHAT_ID = "6178351545"  # Ton chat ID actuel
 
-# Fichier pour stocker ta comptabilité automatiquement
-COMPTA_FILE = "compta_commandes.csv"
-
-# Fonction pour envoyer le message sur ton Telegram
-def envoyer_telegram(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": CHAT_ID, "text": message, "parse_mode": "Markdown"}
-    try:
-        requests.post(url, json=payload)
-    except Exception as e:
-        print(f"Erreur envoi Telegram: {e}")
-
-# Fonction pour sauvegarder la commande dans ton fichier compta
-def sauvegarder_compta(prenom, telephone, adresse, commande, total):
-    file_exists = os.path.isfile(COMPTA_FILE)
-    date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    with open(COMPTA_FILE, mode="a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        if not file_exists:
-            # En-tête du fichier si c'est la première commande
-            writer.writerow(["Date", "Prénom", "Téléphone", "Adresse", "Commande", "Total TTC (€)"])
-        writer.writerow([date_str, prenom, telephone, adresse, commande, total])
-
-# Page d'accueil avec le formulaire de commande (Design simple et propre)
-HTML_TEMPLATE = """
+HTML_FORM = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marseille CBD - Livraison Éclair</title>
+    <title>Marseille CBD</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #121212; color: white; padding: 20px; text-align: center; }
-        .container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
-        h1 { color: #4CAF50; font-size: 24px; }
-        label { display: block; margin: 10px 0 5px; text-align: left; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #4CAF50; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .success { color: #4CAF50; font-weight: bold; margin-top: 15px; }
+        body { font-family: Arial, sans-serif; background-color: #121212; color: #ffffff; padding: 20px; display: flex; justify-content: center; }
+        .container { background-color: #1e1e1e; padding: 30px; border-radius: 10px; max-width: 400px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h1 { color: #2ecc71; text-align: center; margin-bottom: 5px; }
+        p { text-align: center; color: #aaa; font-size: 14px; margin-top: 0; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 5px; border: none; box-sizing: border-box; }
+        input, select { background-color: #2a2a2a; color: white; border: 1px solid #333; }
+        button { background-color: #2ecc71; color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 15px; }
+        button:hover { background-color: #27ae60; }
+        .success { background-color: #27ae60; color: white; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -58,9 +33,9 @@ HTML_TEMPLATE = """
         <h1>🌿 Marseille CBD</h1>
         <p>Livraison rapide - La Plaine / Cours Ju</p>
         <hr style="border: 0.5px solid #333;">
-        
+
         {% if succes %}
-            <p class="success">✅ Commande validée ! Un livreur vous contacte par SMS d'ici 5 minutes.</p>
+            <div class="success">✅ Commande validée ! Un livreur vous contacte par SMS d'ici 5 minutes.</div>
         {% endif %}
 
         <form method="POST" action="/">
@@ -71,7 +46,7 @@ HTML_TEMPLATE = """
             <input type="tel" name="telephone" placeholder="Ex: 0612345678" required>
 
             <label>Adresse de livraison (Marseille) :</label>
-            <input type="text" name="adresse" placeholder="Ex: 12 Rue des Trois Mages" required>
+            <input type="text" name="adresse" placeholder="Ex: 12 Rue des Trois Rois" required>
 
             <label>Choisissez votre produit :</label>
             <select name="commande">
@@ -96,27 +71,25 @@ def home():
         adresse = request.form.get("adresse")
         choix_commande = request.form.get("commande")
         
-        # Extraire le prix de la chaîne de caractères de manière simple
-        total = "40" if "5g" in choix_commande else "70"
-
-        # 1. Sauvegarde automatique dans le fichier Excel/CSV pour ta compta
-        sauvegarder_compta(prenom, telephone, adresse, choix_commande, total)
-
-        # 2. Construction du message d'alerte pour ton Telegram
-        msg_telegram = (
-            f"🚨 *NOUVELLE COMMANDE !*\n\n"
-            f"👤 *Client :* {prenom}\n"
-            f"📞 *Tel :* {telephone}\n"
-            f"📍 *Adresse :* {adresse}\n"
-            f"📦 *Produit :* {choix_commande}\n"
-            f"💰 *À encaisser :* {total} €\n\n"
-            f"🚴 _Sors le vélo, faut livrer !_"
-        )
-        # Envoi de la notification
-        envoyer_telegram(msg_telegram)
-        succes = True
-
-    return render_template_string(HTML_TEMPLATE, succes=succes)
+        # Préparation du texte pour Telegram
+        texte_telegram = f"🔔 *NOUVELLE COMMANDE REÇUE !*\n\n👤 *Prénom :* {prenom}\n📞 *Tél :* {telephone}\n📍 *Adresse :* {adresse}\n📦 *Produit :* {choix_commande}"
+        
+        # Envoi au Bot Telegram
+        url_telegram = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+        payload = {
+            "chat_id": CHAT_ID,
+            "text": texte_telegram,
+            "parse_mode": "Markdown"
+        }
+        
+        try:
+            requests.post(url_telegram, json=payload)
+            succes = True
+        except Exception as e:
+            print(f"Erreur d'envoi Telegram: {e}")
+            
+    return render_template_string(HTML_FORM, succes=succes)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
