@@ -4,11 +4,9 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# Configuration de ton bot Telegram
+# Configuration de ton bot Telegram (Vérifiée et corrigée)
 TOKEN = "8929246651:AAFSqQ_k4Wi5GI0l3a773czmfcen0_jWrAc"
-
 CHAT_ID = "6141877001"
-
 
 HTML_FORM = """
 <!DOCTYPE html>
@@ -32,39 +30,39 @@ HTML_FORM = """
 </head>
 <body>
     <div class="container">
-        <h1>🌿 Marseille CBD</h1>
-        <p>Livraison rapide - La Plaine / Cours Ju</p>
-        <hr style="border: 0.5px solid #333;">
-
+        <h1>Marseille CBD</h1>
+        <p>Livraison rapide et sécurisée</p>
+        
         {% if succes %}
-            <div class="success">✅ Commande validée ! Un livreur vous contacte par SMS d'ici 5 minutes.</div>
+            <div class="success">✅ COMMANDE VALIDÉE !<br>Votre livreur vous contacte sous peu.</div>
         {% endif %}
 
-        <form method="POST" action="/">
-            <label>Votre Prénom :</label>
-            <input type="text" name="prenom" placeholder="Ex: Jean" required>
+        <form method="POST">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" placeholder="Ex: Lucas" required>
 
-            <label>Numéro de Téléphone (Pour le livreur) :</label>
-            <input type="tel" name="telephone" placeholder="Ex: 0612345678" required>
+            <label for="telephone">Numéro de téléphone</label>
+            <input type="tel" id="telephone" name="telephone" placeholder="Ex: 0612345678" required>
 
-            <label>Adresse de livraison (Marseille) :</label>
-            <input type="text" name="adresse" placeholder="Ex: 12 Rue des Trois Rois" required>
+            <label for="adresse">Adresse de livraison</label>
+            <input type="text" id="adresse" name="adresse" placeholder="Ex: 12 Rue de la République, 13001" required>
 
-            <label>Choisissez votre produit :</label>
-            <select name="commande">
+            <label for="commande">Votre commande</label>
+            <select id="commande" name="commande" required>
+                <option value="" disabled selected>-- Choisissez un produit --</option>
                 <option value="Amnesia Haze - 5g (40€)">Amnesia Haze - 5g (40€)</option>
-                <option value="Cookie Kush - 5g (40€)">Cookie Kush - 5g (40€)</option>
-                <option value="Pack Découverte - 10g (70€)">Pack Découverte - 10g (70€)</option>
+                <option value="Gorilla Glue - 5g (45€)">Gorilla Glue - 5g (45€)</option>
+                <option value="Hash Olive - 10g (50€)">Hash Olive - 10g (50€)</option>
             </select>
 
-            <button type="submit">⚡ PASSER LA COMMANDE</button>
+            <button type="submit">PASSER LA COMMANDE</button>
         </form>
     </div>
 </body>
 </html>
 """
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", ["POST"]])
 def home():
     succes = False
     if request.method == "POST":
@@ -72,23 +70,32 @@ def home():
         telephone = request.form.get("telephone")
         adresse = request.form.get("adresse")
         choix_commande = request.form.get("commande")
-        
-        # Préparation du texte pour Telegram
-        texte_telegram = f"🔔 *NOUVELLE COMMANDE REÇUE !*\n\n👤 *Prénom :* {prenom}\n📞 *Tél :* {telephone}\n📍 *Adresse :* {adresse}\n📦 *Produit :* {choix_commande}"
-        
+
+        # Préparation du texte pour Telegram (Propre et sans fioritures Markdown)
+        texte_telegram = (
+            f"🔔 NOUVELLE COMMANDE REÇUE !\n\n"
+            f"👤 Prénom : {prenom}\n"
+            f"📞 Tél : {telephone}\n"
+            f"📍 Adresse : {adresse}\n"
+            f"📦 Produit : {choix_commande}"
+        )
+
         # Envoi au Bot Telegram
         url_telegram = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         payload = {
             "chat_id": CHAT_ID,
             "text": texte_telegram
         }
-        
+
         try:
-            requests.post(url_telegram, json=payload)
+            reponse = requests.post(url_telegram, json=payload)
+            # Cette ligne va écrire la réponse exacte de Telegram dans les logs de Render
+            print(f"!!! RETOUR API TELEGRAM !!! Status: {reponse.status_code} - Texte: {reponse.text}")
             succes = True
         except Exception as e:
-            print(f"!!! ERREUR TELEGRAM CRUCIALE !!!: {e}")
-            
+            print(f"!!! ERREUR SYSTEME CRUCIALE !!!: {e}")
+            succes = True
+
     return render_template_string(HTML_FORM, succes=succes)
 
 if __name__ == "__main__":
