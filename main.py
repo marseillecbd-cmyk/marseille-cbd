@@ -80,8 +80,7 @@ def home():
         url_telegram = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         payload = {
             "chat_id": CHAT_ID,
-            "text": texte_telegram,
-            "parse_mode": "Markdown"
+            "text": texte_telegram
         }
         
         try:
