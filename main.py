@@ -63,7 +63,7 @@ HTML_TEMPLATE = """
             <p class="success">✅ Commande validée ! Un livreur vous contacte par SMS d'ici 5 minutes.</p>
         {% endif %}
 
-        <form method="POST">
+        <form method="POST" action="/">
             <label>Votre Prénom :</label>
             <input type="text" name="prenom" placeholder="Ex: Jean" required>
 
