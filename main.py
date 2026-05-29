@@ -87,7 +87,7 @@ def home():
             requests.post(url_telegram, json=payload)
             succes = True
         except Exception as e:
-            print(f"Erreur d'envoi Telegram: {e}")
+            print(f"!!! ERREUR TELEGRAM CRUCIALE !!!: {e}")
             
     return render_template_string(HTML_FORM, succes=succes)
 
