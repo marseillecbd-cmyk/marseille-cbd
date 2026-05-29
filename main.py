@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 # Configuration de ton bot Telegram
 TOKEN = "8929246651:AAFSqQ_k4Wi5GI0l3a773czmfcen0_jWrAc"
+
 CHAT_ID = "6141877001"
 
 
