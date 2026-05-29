@@ -62,7 +62,7 @@ HTML_FORM = """
 </html>
 """
 
-@app.route("/", methods=["GET", ["POST"]])
+@app.route("/", methods=["GET", "POST"])
 def home():
     succes = False
     if request.method == "POST":
@@ -71,7 +71,7 @@ def home():
         adresse = request.form.get("adresse")
         choix_commande = request.form.get("commande")
 
-        # Préparation du texte pour Telegram (Propre et sans fioritures Markdown)
+        # Préparation du texte pour Telegram (Propre et sans fioritures)
         texte_telegram = (
             f"🔔 NOUVELLE COMMANDE REÇUE !\n\n"
             f"👤 Prénom : {prenom}\n"
