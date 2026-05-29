@@ -5,8 +5,9 @@ from flask import Flask, render_template_string, request
 app = Flask(__name__)
 
 # Configuration de ton bot Telegram
-TOKEN = "7294970428:AAHTX_0A-X9y20lQjI2W8HjO_Z4yU4_8f9I"  # Ton token actuel
-CHAT_ID = "6178351545"  # Ton chat ID actuel
+TOKEN = "8929246651:AAFSqQ_k4Wi5GI0l3a773czmfcen0_jWrAc"
+CHAT_ID = "6141877001"
+
 
 HTML_FORM = """
 <!DOCTYPE html>
