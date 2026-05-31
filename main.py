@@ -43,7 +43,6 @@ HTML_FORM = """
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; width: 100%; max-width: 800px; margin-bottom: 20px; }
         .card { background: var(--card-bg); border: 1px solid #2c2c2e; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s; position: relative; }
         .card:hover { transform: translateY(-2px); border-color: #48484a; }
-        .card.selected { border-color: var(--accent-color); box-shadow: 0 0 10px rgba(0, 255, 102, 0.2); }
         .card h3 { margin: 0 0 5px 0; font-size: 1.2rem; }
         .card .culture-tag { font-size: 0.75rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: block; }
 
@@ -53,7 +52,7 @@ HTML_FORM = """
         .size-btn.active { background: var(--accent-color); color: #000; }
         
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(10px); border-top: 1px solid #2c2c2e; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; z-index: 10; }
-        .summary-text { font-size: 1rem; margin-bottom: 10px; color: var(--text-muted); }
+        .summary-text { font-size: 0.95rem; margin-bottom: 10px; color: var(--text-muted); text-align: center; max-width: 600px; }
         .summary-text span { color: var(--accent-color); font-weight: bold; }
         .btn-main { background: var(--accent-color); color: #000; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; max-width: 400px; transition: opacity 0.2s; text-transform: uppercase; }
         .btn-main:hover { opacity: 0.9; }
@@ -74,7 +73,7 @@ HTML_FORM = """
         .success-screen { text-align: center; padding: 20px; }
         .success-icon { font-size: 40px; color: var(--accent-color); margin-bottom: 10px; }
         
-        .spacer { height: 120px; }
+        .spacer { height: 140px; }
     </style>
 </head>
 <body>
@@ -98,16 +97,15 @@ HTML_FORM = """
     </div>
     {% endif %}
 
-    <!-- SECTION FLEURS -->
     <div class="section-title">Fleurs</div>
     <div class="grid">
         <div class="card" onclick="openProductModal('Amnesia Haze', '📍 Type : Dominance Sativa<br>💧 Culture : HIDROPÓNICO (Petites têtes d\\'entrée de gamme)<br>📊 Taux CBD : ~17%<br><br>✨ Effets : Énergisant, focus et clarté d\\'esprit. Idéal pour un usage en journée sans effet cassant.<br>🍋 Arômes : Très marqué agrumes, citron authentique et fond boisé.', 'https://images.unsplash.com/photo-1536657464919-892541299952?w=400')">
             <h3>Amnesia Haze</h3>
             <span class="culture-tag">Hidropónico</span>
             <div class="size-options">
-                <button class="size-btn" onclick="selectProduct(event, 'Amnesia Haze', '2g', 10)">2g - 10€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Amnesia Haze', '5g', 20)">5g - 20€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Amnesia Haze', '10g', 35)">10g - 35€</button>
+                <button class="size-btn" data-product="Amnesia Haze" data-size="2g" onclick="toggleProduct(event, 'Amnesia Haze', '2g', 10)">2g - 10€</button>
+                <button class="size-btn" data-product="Amnesia Haze" data-size="5g" onclick="toggleProduct(event, 'Amnesia Haze', '5g', 20)">5g - 20€</button>
+                <button class="size-btn" data-product="Amnesia Haze" data-size="10g" onclick="toggleProduct(event, 'Amnesia Haze', '10g', 35)">10g - 35€</button>
             </div>
         </div>
 
@@ -115,9 +113,9 @@ HTML_FORM = """
             <h3>Orange Bud</h3>
             <span class="culture-tag">Greenhouse</span>
             <div class="size-options">
-                <button class="size-btn" onclick="selectProduct(event, 'Orange Bud', '2g', 12)">2g - 12€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Orange Bud', '5g', 25)">5g - 25€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Orange Bud', '10g', 45)">10g - 45€</button>
+                <button class="size-btn" data-product="Orange Bud" data-size="2g" onclick="toggleProduct(event, 'Orange Bud', '2g', 12)">2g - 12€</button>
+                <button class="size-btn" data-product="Orange Bud" data-size="5g" onclick="toggleProduct(event, 'Orange Bud', '5g', 25)">5g - 25€</button>
+                <button class="size-btn" data-product="Orange Bud" data-size="10g" onclick="toggleProduct(event, 'Orange Bud', '10g', 45)">10g - 45€</button>
             </div>
         </div>
 
@@ -125,23 +123,22 @@ HTML_FORM = """
             <h3>Cookie Kush</h3>
             <span class="culture-tag">Indoor</span>
             <div class="size-options">
-                <button class="size-btn" onclick="selectProduct(event, 'Cookie Kush', '2g', 15)">2g - 15€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Cookie Kush', '5g', 30)">5g - 30€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Cookie Kush', '10g', 55)">10g - 55€</button>
+                <button class="size-btn" data-product="Cookie Kush" data-size="2g" onclick="toggleProduct(event, 'Cookie Kush', '2g', 15)">2g - 15€</button>
+                <button class="size-btn" data-product="Cookie Kush" data-size="5g" onclick="toggleProduct(event, 'Cookie Kush', '5g', 30)">5g - 30€</button>
+                <button class="size-btn" data-product="Cookie Kush" data-size="10g" onclick="toggleProduct(event, 'Cookie Kush', '10g', 55)">10g - 55€</button>
             </div>
         </div>
     </div>
 
-    <!-- SECTION RÉSINES -->
     <div class="section-title">Résines</div>
     <div class="grid">
         <div class="card" onclick="openProductModal('Skuff - Polen', '📍 Type : Pollen tamisé à sec (Dry Sift)<br>📊 Taux CBD : ~25%<br>🧈 Texture : Poudreuse et sablonneuse, s\\'effrite très facilement sans chauffer.<br><br>✨ Effets : Apaisement musculaire global, calme mental parfait au quotidien.<br>🌿 Arômes : Très végétal, notes terreuses classiques et parfum de chanvre pur.', 'https://images.unsplash.com/photo-1556928967-df529c9918bc?w=400')">
             <h3>Skuff - Polen</h3>
             <span class="culture-tag">Dry Sift</span>
             <div class="size-options">
-                <button class="size-btn" onclick="selectProduct(event, 'Skuff - Polen', '2g', 12)">2g - 12€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Skuff - Polen', '5g', 25)">5g - 25€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Skuff - Polen', '10g', 45)">10g - 45€</button>
+                <button class="size-btn" data-product="Skuff - Polen" data-size="2g" onclick="toggleProduct(event, 'Skuff - Polen', '2g', 12)">2g - 12€</button>
+                <button class="size-btn" data-product="Skuff - Polen" data-size="5g" onclick="toggleProduct(event, 'Skuff - Polen', '5g', 25)">5g - 25€</button>
+                <button class="size-btn" data-product="Skuff - Polen" data-size="10g" onclick="toggleProduct(event, 'Skuff - Polen', '10g', 45)">10g - 45€</button>
             </div>
         </div>
         
@@ -149,22 +146,20 @@ HTML_FORM = """
             <h3>Creamy Piatella</h3>
             <span class="culture-tag">Premium Cold Cure</span>
             <div class="size-options">
-                <button class="size-btn" onclick="selectProduct(event, 'Creamy Piatella', '2g', 20)">2g - 20€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Creamy Piatella', '5g', 45)">5g - 45€</button>
-                <button class="size-btn" onclick="selectProduct(event, 'Creamy Piatella', '10g', 80)">10g - 80€</button>
+                <button class="size-btn" data-product="Creamy Piatella" data-size="2g" onclick="toggleProduct(event, 'Creamy Piatella', '2g', 20)">2g - 20€</button>
+                <button class="size-btn" data-product="Creamy Piatella" data-size="5g" onclick="toggleProduct(event, 'Creamy Piatella', '5g', 45)">5g - 45€</button>
+                <button class="size-btn" data-product="Creamy Piatella" data-size="10g" onclick="toggleProduct(event, 'Creamy Piatella', '10g', 80)">10g - 80€</button>
             </div>
         </div>
     </div>
 
     <div class="spacer"></div>
 
-    <!-- BARRE DE RECAP FIXE EN BAS -->
     <div class="sticky-footer">
         <div class="summary-text" id="footerSummary">Aucun produit sélectionné</div>
         <button class="btn-main" id="confirmOrderBtn" onclick="openCheckoutModal()" disabled>Confirmer la commande</button>
     </div>
 
-    <!-- POPUP 1 : DETAILS DU PRODUIT -->
     <div class="modal-overlay" id="productModalOverlay" onclick="closeModals()">
         <div class="modal" onclick="event.stopPropagation()">
             <h2 id="modalProductName">Nom du Produit</h2>
@@ -174,10 +169,9 @@ HTML_FORM = """
         </div>
     </div>
 
-    <!-- POPUP 2 : FORMULAIRE CLIENT DE FIN -->
     <div class="modal-overlay" id="checkoutModalOverlay" onclick="closeModals()">
         <div class="modal" onclick="event.stopPropagation()">
-            <h2 id="checkoutModalTitle">Votre Commande : --€</h2>
+            <h2 id="checkoutModalTitle">Votre Commande</h2>
             <form method="POST">
                 <input type="hidden" id="formCommandeText" name="commande" value="">
                 
@@ -196,23 +190,53 @@ HTML_FORM = """
     </div>
 
     <script>
-        let currentSelection = { name: '', size: '', price: 0 };
+        // Le dictionnaire global qui contient le panier
+        let panier = {};
 
-        function selectProduct(event, name, size, price) {
-            event.stopPropagation(); // Évite le double déclenchement de la pop-up de détails
+        function toggleProduct(event, name, size, price) {
+            event.stopPropagation(); // Évite d'ouvrir les détails en cliquant sur le bouton
             
-            document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+            const key = `${name} (${size})`;
             
-            event.target.classList.add('active');
-            const card = event.target.closest('.card');
-            if(card) card.classList.add('selected');
+            if (panier[key]) {
+                // Si le format précis est déjà cliqué, on le retire du panier
+                delete panier[key];
+                event.target.classList.remove('active');
+            } else {
+                // Sinon, on décoche d'abord les autres tailles du MÊME produit (pour éviter les doublons étranges sur une même ligne)
+                document.querySelectorAll(`.size-btn[data-product="${name}"]`).forEach(btn => {
+                    btn.classList.remove('active');
+                    const otherSize = btn.getAttribute('data-size');
+                    delete panier[`${name} (${otherSize})`];
+                });
+                
+                // On ajoute la nouvelle sélection
+                panier[key] = price;
+                event.target.classList.add('active');
+            }
             
-            currentSelection = { name, size, price };
-            
-            document.getElementById('footerSummary').innerHTML = `Votre Commande : <span>${name} (${size})</span> — Total : <span>${price}€</span>`;
-            
+            updateFooter();
+        }
+
+        function updateFooter() {
+            const keys = Object.keys(panier);
             const mainBtn = document.getElementById('confirmOrderBtn');
+            
+            if (keys.length === 0) {
+                document.getElementById('footerSummary').innerHTML = "Aucun produit sélectionné";
+                mainBtn.setAttribute('disabled', 'true');
+                return;
+            }
+            
+            let total = 0;
+            let itemsText = [];
+            
+            for (let item in panier) {
+                total += panier[item];
+                itemsText.push(item);
+            }
+            
+            document.getElementById('footerSummary').innerHTML = `Panier : <span>${itemsText.join(' + ')}</span> — Total : <span>${total}€</span>`;
             mainBtn.removeAttribute('disabled');
         }
 
@@ -236,10 +260,17 @@ HTML_FORM = """
         }
 
         function openCheckoutModal() {
-            hideProductModal(); // Assure la fermeture fluide de la première pop-up
+            hideProductModal();
             
-            document.getElementById('checkoutModalTitle').innerText = `Votre Commande : ${currentSelection.price}€`;
-            document.getElementById('formCommandeText').value = `${currentSelection.name} - ${currentSelection.size} (${currentSelection.price}€)`;
+            let total = 0;
+            let itemsText = [];
+            for (let item in panier) {
+                total += panier[item];
+                itemsText.push(`${item} [${panier[item]}€]`);
+            }
+            
+            document.getElementById('checkoutModalTitle').innerText = `Total à payer : ${total}€`;
+            document.getElementById('formCommandeText').value = itemsText.join(' / ') + ` (Total: ${total}€)`;
             
             document.getElementById('checkoutModalOverlay').style.display = 'flex';
         }
@@ -263,11 +294,11 @@ def home():
         choix_commande = request.form.get("commande")
 
         texte_telegram = (
-            f"🔔 NOUVELLE COMMANDE REÇUE !\n\n"
+            f"🔔 NOUVELLE COMMANDE MULTIPLE REÇUE !\n\n"
             f"👤 Prénom : {prenom}\n"
             f"📞 Tél : {telephone}\n"
-            f"📍 Adresse : {adresse}\n"
-            f"📦 Produit : {choix_commande}"
+            f"📍 Adresse : {adresse}\n\n"
+            f"📦 Liste des produits :\n{choix_commande}"
         )
 
         url_telegram = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
