@@ -4,6 +4,7 @@ from flask import Flask, render_template_string, request, send_from_directory
 import math
 from datetime import datetime
 import csv
+import json
 
 app = Flask(__name__)
 
@@ -279,7 +280,7 @@ def generer_html(statut_commande=None):
         <div class="section-title" data-trans="sec_flowers">Fleurs</div>
         <div class="grid">
             {% for name, info in stocks.items() if info.culture in ['Hydroponique', 'Greenhouse', 'Indoor'] %}
-            <div class="card" onclick="openProductModal('{{ name }}', {{ info.details|tojson|safe }})">
+            <div class="card" data-name="{{ name }}" data-details='{{ info.details|tojson|safe }}' onclick="preparerModal(this)">
                 <img src="{{ info.image }}" class="card-img" alt="{{ name }}">
                 <div class="card-content">
                     <div>
@@ -309,7 +310,7 @@ def generer_html(statut_commande=None):
         <div class="section-title" data-trans="sec_resins">Résines</div>
         <div class="grid">
             {% for name, info in stocks.items() if info.culture in ['Dry Sift', 'Premium Cold Cure'] %}
-            <div class="card" onclick="openProductModal('{{ name }}', {{ info.details|tojson|safe }})">
+            <div class="card" data-name="{{ name }}" data-details='{{ info.details|tojson|safe }}' onclick="preparerModal(this)">
                 <img src="{{ info.image }}" class="card-img" alt="{{ name }}">
                 <div class="card-content">
                     <div>
@@ -378,7 +379,7 @@ def generer_html(statut_commande=None):
         <script>
             let panier = {};
             let currentLang = 'fr';
-            let activeProductTranslations = null; // Stocke temporairement les textes du produit ouvert
+            let activeProductTranslations = null;
 
             const translations = {
                 fr: {
@@ -456,7 +457,9 @@ def generer_html(statut_commande=None):
             function changeLanguage(lang) {
                 currentLang = lang;
                 document.querySelectorAll('.lang-selector .lang-btn').forEach(btn => btn.classList.remove('active'));
-                event.target.classList.add('active');
+                if (event && event.target) {
+                    event.target.classList.add('active');
+                }
                 
                 document.querySelectorAll('[data-trans]').forEach(el => {
                     const key = el.getAttribute('data-trans');
@@ -465,7 +468,6 @@ def generer_html(statut_commande=None):
                     }
                 });
 
-                // Si une popup de produit est actuellement ouverte, on met à jour son texte à la volée
                 if (activeProductTranslations && activeProductTranslations[lang]) {
                     document.getElementById('modalProductDesc').innerHTML = activeProductTranslations[lang];
                 }
@@ -537,10 +539,15 @@ def generer_html(statut_commande=None):
                 clearBtn.style.display = 'inline-block';
             }
 
+            function preparerModal(cardElement) {
+                const name = cardElement.getAttribute('data-name');
+                const detailsObj = JSON.parse(cardElement.getAttribute('data-details'));
+                openProductModal(name, detailsObj);
+            }
+
             function openProductModal(name, detailsObj) {
-                activeProductTranslations = detailsObj; // On garde l'objet des langues en mémoire
+                activeProductTranslations = detailsObj;
                 document.getElementById('modalProductName').innerText = name;
-                // On affiche la description dans la langue actuellement sélectionnée
                 document.getElementById('modalProductDesc').innerHTML = detailsObj[currentLang] || detailsObj['fr'];
                 document.getElementById('productModalOverlay').style.display = 'flex';
             }
@@ -632,7 +639,6 @@ def home():
                             try: total_prix = int(choix_commande.split("Total: ")[1].replace("€)", ""))
                             except: total_prix = 0
 
-                        # Enregistrement compta locale
                         enregistrer_vente_anonyme(" + ".join(items_vendus), total_prix)
 
                         lien_itineraire = f"https://www.google.com/maps/dir/{CENTRE_LAT},{CENTRE_LON}/{client_lat},{client_lon}"
