@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, send_from_directory
 import math
 from datetime import datetime
 import csv
@@ -18,7 +18,7 @@ RAYON_MAX_KM = 1.0
 
 FICHIER_COMPTA = "compta.csv"
 
-# 📦 STOCKS & INFOS PRODUITS (Avec descriptions complètes, termes corrigés et images)
+# 📦 STOCKS & INFOS PRODUITS
 STOCKS = {
     "Amnesia Haze": {
         "stocks": {"2g": 10, "5g": 5, "10g": 3},
@@ -79,7 +79,7 @@ def generer_html(statut_commande=None):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Marseille CBD</title>
+        <title>NATIVE MJ</title>
         <style>
             :root {
                 --bg-color: #0b0b0c;
@@ -99,8 +99,34 @@ def generer_html(statut_commande=None):
                 flex-direction: column;
                 align-items: center;
             }
-            .header { text-align: center; margin-bottom: 30px; }
-            .header h1 { font-size: 2.2rem; letter-spacing: 2px; margin-bottom: 5px; }
+            
+            /* Sélecteur de Langue */
+            .lang-selector {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                display: flex;
+                gap: 8px;
+                background: var(--card-bg);
+                padding: 6px 10px;
+                border-radius: 20px;
+                border: 1px solid #2c2c2e;
+                z-index: 100;
+            }
+            .lang-btn {
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: transform 0.2s;
+                background: none;
+                border: none;
+                padding: 0;
+            }
+            .lang-btn:hover { transform: scale(1.2); }
+            .lang-btn.active { border-bottom: 2px solid var(--accent-color); }
+
+            .header { text-align: center; margin-bottom: 30px; position: relative; width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; }
+            .logo-img { width: 120px; height: auto; margin-top: 20px; margin-bottom: 10px; }
+            .header h1 { font-size: 2.2rem; letter-spacing: 2px; margin: 0 0 5px 0; font-weight: bold; }
             .header p { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
             .badge { display: inline-block; background: rgba(0, 255, 102, 0.1); color: var(--accent-color); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-top: 10px; }
             
@@ -116,11 +142,16 @@ def generer_html(statut_commande=None):
             .card h3 { margin: 0 0 5px 0; font-size: 1.25rem; }
             .card .culture-tag { font-size: 0.75rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: block; }
 
-            .size-options { display: flex; gap: 6px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
-            .size-btn { background: #2c2c2e; border: none; color: var(--text-main); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-            .size-btn:hover { background: #3a3a3c; }
-            .size-btn.active { background: var(--accent-color); color: #000; }
-            .size-btn:disabled { background: #1c1c1e; color: #48484a; border: 1px dashed #3a3a3c; cursor: not-allowed; text-decoration: line-through; }
+            .size-options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+            .size-row { display: flex; justify-content: space-between; align-items: center; background: #2c2c2e; padding: 6px 10px; border-radius: 8px; }
+            .size-label { font-size: 0.85rem; font-weight: bold; }
+            
+            .qty-controls { display: flex; align-items: center; gap: 8px; }
+            .qty-btn { background: #3a3a3c; border: none; color: white; width: 26px; height: 26px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+            .qty-btn:hover { background: #48484a; }
+            .qty-btn:disabled { background: #1c1c1e; color: #48484a; cursor: not-allowed; }
+            .qty-val { font-size: 0.9rem; font-weight: bold; min-width: 14px; text-align: center; }
+            .qty-val.active { color: var(--accent-color); }
             
             .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(18, 18, 18, 0.9); backdrop-filter: blur(10px); border-top: 1px solid #2c2c2e; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; z-index: 10; }
             .summary-layout { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -143,41 +174,48 @@ def generer_html(statut_commande=None):
             input { width: 100%; padding: 12px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 8px; color: white; box-sizing: border-box; }
             input:focus { border-color: var(--accent-color); outline: none; }
             
-            .spacer { height: 140px; }
+            .spacer { height: 160px; }
         </style>
     </head>
     <body>
 
-        <!-- 🔞 BARRIÈRE D'ÂGE OBLIGATOIRE -->
         <div class="modal-overlay" id="ageGateOverlay" style="display: flex; z-index: 9999;">
             <div class="modal" style="text-align: center;">
-                <h2>🔞 VÉRIFICATION D'ÂGE</h2>
-                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">
+                <h2 data-trans="age_title">🔞 VÉRIFICATION D'ÂGE</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;" data-trans="age_desc">
                     Ce site propose des produits dérivés du CBD réservés aux personnes majeures. Veuillez confirmer votre majorité pour accéder au menu.
                 </p>
                 <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button class="btn-main" onclick="validerAge()" style="width: 130px;">J'AI +18 ANS</button>
-                    <button class="btn-main" onclick="refuserAge()" style="width: 130px; background-color: var(--error-color); color: white;">-18 ANS</button>
+                    <button class="btn-main" onclick="validerAge()" style="width: 130px;" data-trans="age_yes">J'AI +18 ANS</button>
+                    <button class="btn-main" onclick="refuserAge()" style="width: 130px; background-color: var(--error-color); color: white;" data-trans="age_no">-18 ANS</button>
                 </div>
             </div>
         </div>
 
         <div class="header">
-            <h1>MARSEILLE CBD</h1>
-            <p>Service de livraison privé & expéditions</p>
-            <div class="badge">📍 Zone : La Plaine / Cours Ju (<1km)</div>
+            <div class="lang-selector">
+                <button class="lang-btn active" onclick="changeLanguage('fr')">🇫🇷</button>
+                <button class="lang-btn" onclick="changeLanguage('en')">🇬🇧</button>
+                <button class="lang-btn" onclick="changeLanguage('es')">🇪🇸</button>
+                <button class="lang-btn" onclick="changeLanguage('it')">🇮🇹</button>
+                <button class="lang-btn" onclick="changeLanguage('de')">🇩🇪</button>
+            </div>
+
+            <img src="/logo.png" class="logo-img" alt="Native MJ Logo">
+            <h1>NATIVE MJ</h1>
+            <p data-trans="header_sub">Service de livraison privé & expéditions</p>
+            <div class="badge" data-trans="header_badge">📍 Zone : La Plaine / Cours Ju (<1km)</div>
         </div>
 
-        <!-- POPUPS DE STATUT -->
         {% if statut == "succes" %}
         <div class="modal-overlay" id="statusOverlay" style="display: flex;" onclick="document.getElementById('statusOverlay').style.display='none'">
             <div class="modal" onclick="event.stopPropagation()">
                 <div style="text-align: center;">
                     <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
-                    <h2>COMMANDE VALIDÉE !</h2>
-                    <p style="color: var(--text-muted); font-size: 0.95rem;">Votre commande a bien été transmise.</p>
-                    <p style="color: var(--accent-color); font-weight: bold;">⏱️ Temps estimé : 20 à 45 min selon le rush.</p>
-                    <button class="btn-main" onclick="document.getElementById('statusOverlay').style.display='none'" style="margin-top: 15px;">Fermer</button>
+                    <h2 data-trans="status_success_title">COMMANDE VALIDÉE !</h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;" data-trans="status_success_desc">Votre commande a bien été transmise.</p>
+                    <p style="color: var(--accent-color); font-weight: bold;" data-trans="status_success_time">⏱️ Temps estimé : 20 à 45 min selon le rush.</p>
+                    <button class="btn-main" onclick="document.getElementById('statusOverlay').style.display='none'" style="margin-top: 15px;" data-trans="close">Fermer</button>
                 </div>
             </div>
         </div>
@@ -188,9 +226,9 @@ def generer_html(statut_commande=None):
             <div class="modal error-modal" onclick="event.stopPropagation()">
                 <div style="text-align: center;">
                     <div style="font-size: 40px; margin-bottom: 10px;">❌</div>
-                    <h2>HORS ZONE</h2>
-                    <p style="color: var(--text-muted); font-size: 0.95rem;">Nous livrons uniquement dans un rayon de 1 km autour de La Plaine / Cours Ju.</p>
-                    <button class="btn-main" onclick="document.getElementById('statusOverlay').style.display='none'" style="margin-top: 15px; background-color: var(--error-color); color: white;">Modifier l'adresse</button>
+                    <h2 data-trans="status_out_title">HORS ZONE</h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;" data-trans="status_out_desc">Nous livrons uniquement dans un rayon de 1 km autour de La Plaine / Cours Ju.</p>
+                    <button class="btn-main" onclick="document.getElementById('statusOverlay').style.display='none'" style="margin-top: 15px; background-color: var(--error-color); color: white;" data-trans="status_out_btn">Modifier l'adresse</button>
                 </div>
             </div>
         </div>
@@ -201,16 +239,15 @@ def generer_html(statut_commande=None):
             <div class="modal error-modal" onclick="event.stopPropagation()">
                 <div style="text-align: center;">
                     <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-                    <h2>RUPTURE DE STOCK</h2>
-                    <p style="color: var(--text-muted); font-size: 0.95rem;">Un autre client a validé ce produit juste avant vous. Modifiez votre panier.</p>
-                    <button class="btn-main" onclick="document.getElementById('statusOverlay').style.display='none'" style="margin-top: 15px; background-color: var(--error-color); color: white;">Retour au menu</button>
+                    <h2 data-trans="status_stock_title">RUPTURE DE STOCK</h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;" data-trans="status_stock_desc">Un autre client a validé ce produit juste avant vous. Modifiez votre panier.</p>
+                    <button class="btn-main" onclick="document.getElementById('statusOverlay').style.display='none'" style="margin-top: 15px; background-color: var(--error-color); color: white;" data-trans="status_stock_btn">Retour au menu</button>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <!-- SECTION FLEURS -->
-        <div class="section-title">Fleurs</div>
+        <div class="section-title" data-trans="sec_flowers">Fleurs</div>
         <div class="grid">
             {% for name, info in stocks.items() if info.culture in ['Hydroponique', 'Greenhouse', 'Indoor'] %}
             <div class="card" onclick="openProductModal('{{ name }}', `{{ info.details|safe }}`)">
@@ -221,17 +258,26 @@ def generer_html(statut_commande=None):
                         <span class="culture-tag">{{ info.culture }}</span>
                     </div>
                     <div class="size-options">
-                        <button class="size-btn" data-product="{{ name }}" data-size="2g" {% if info.stocks['2g'] <= 0 %}disabled{% endif %} onclick="toggleProduct(event, '{{ name }}', '2g', 10 if name=='Amnesia Haze' else (12 if name=='Orange Bud' else 15))">{% if info.stocks['2g'] <= 0 %}Rupture{% else %}2g - {% if name=='Amnesia Haze' %}10€{% elif name=='Orange Bud' %}12€{% else %}15€{% endif %}{% endif %}</button>
-                        <button class="size-btn" data-product="{{ name }}" data-size="5g" {% if info.stocks['5g'] <= 0 %}disabled{% endif %} onclick="toggleProduct(event, '{{ name }}', '5g', 20 if name=='Amnesia Haze' else (25 if name=='Orange Bud' else 30))">{% if info.stocks['5g'] <= 0 %}Rupture{% else %}5g - {% if name=='Amnesia Haze' %}20€{% elif name=='Orange Bud' %}25€{% else %}30€{% endif %}{% endif %}</button>
-                        <button class="size-btn" data-product="{{ name }}" data-size="10g" {% if info.stocks['10g'] <= 0 %}disabled{% endif %} onclick="toggleProduct(event, '{{ name }}', '10g', 35 if name=='Amnesia Haze' else (45 if name=='Orange Bud' else 55))">{% if info.stocks['10g'] <= 0 %}Rupture{% else %}10g - {% if name=='Amnesia Haze' %}35€{% elif name=='Orange Bud' %}45€{% else %}55€{% endif %}{% endif %}</button>
+                        {% for size in ['2g', '5g', '10g'] %}
+                        {% set price = 10 if name=='Amnesia Haze' else (12 if name=='Orange Bud' else 15) %}
+                        {% if size == '5g' %}{% set price = 20 if name=='Amnesia Haze' else (25 if name=='Orange Bud' else 30) %}{% endif %}
+                        {% if size == '10g' %}{% set price = 35 if name=='Amnesia Haze' else (45 if name=='Orange Bud' else 55) %}{% endif %}
+                        <div class="size-row" onclick="event.stopPropagation();">
+                            <span class="size-label">{{ size }} - {{ price }}€</span>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="updateQty('{{ name }}', '{{ size }}', {{ price }}, -1)" {% if info.stocks[size] <= 0 %}disabled{% endif %}>-</button>
+                                <span class="qty-val" id="qty-{{ name }}-{{ size }}">0</span>
+                                <button class="qty-btn" onclick="updateQty('{{ name }}', '{{ size }}', {{ price }}, 1)" {% if info.stocks[size] <= 0 %}disabled{% endif %}>+</button>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
 
-        <!-- SECTION RÉSINES -->
-        <div class="section-title">Résines</div>
+        <div class="section-title" data-trans="sec_resins">Résines</div>
         <div class="grid">
             {% for name, info in stocks.items() if info.culture in ['Dry Sift', 'Premium Cold Cure'] %}
             <div class="card" onclick="openProductModal('{{ name }}', `{{ info.details|safe }}`)">
@@ -242,9 +288,19 @@ def generer_html(statut_commande=None):
                         <span class="culture-tag">{{ info.culture }}</span>
                     </div>
                     <div class="size-options">
-                        <button class="size-btn" data-product="{{ name }}" data-size="2g" {% if info.stocks['2g'] <= 0 %}disabled{% endif %} onclick="toggleProduct(event, '{{ name }}', '2g', 12 if name=='Skuff - Polen' else 20)">{% if info.stocks['2g'] <= 0 %}Rupture{% else %}2g - {% if name=='Skuff - Polen' %}12€{% else %}20€{% endif %}{% endif %}</button>
-                        <button class="size-btn" data-product="{{ name }}" data-size="5g" {% if info.stocks['5g'] <= 0 %}disabled{% endif %} onclick="toggleProduct(event, '{{ name }}', '5g', 25 if name=='Skuff - Polen' else 45)">{% if info.stocks['5g'] <= 0 %}Rupture{% else %}5g - {% if name=='Skuff - Polen' %}25€{% else %}45€{% endif %}{% endif %}</button>
-                        <button class="size-btn" data-product="{{ name }}" data-size="10g" {% if info.stocks['10g'] <= 0 %}disabled{% endif %} onclick="toggleProduct(event, '{{ name }}', '10g', 45 if name=='Skuff - Polen' else 80)">{% if info.stocks['10g'] <= 0 %}Rupture{% else %}10g - {% if name=='Skuff - Polen' %}45€{% else %}80€{% endif %}{% endif %}</button>
+                        {% for size in ['2g', '5g', '10g'] %}
+                        {% set price = 12 if name=='Skuff - Polen' else 20 %}
+                        {% if size == '5g' %}{% set price = 25 if name=='Skuff - Polen' else 45 %}{% endif %}
+                        {% if size == '10g' %}{% set price = 45 if name=='Skuff - Polen' else 80 %}{% endif %}
+                        <div class="size-row" onclick="event.stopPropagation();">
+                            <span class="size-label">{{ size }} - {{ price }}€</span>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="updateQty('{{ name }}', '{{ size }}', {{ price }}, -1)" {% if info.stocks[size] <= 0 %}disabled{% endif %}>-</button>
+                                <span class="qty-val" id="qty-{{ name }}-{{ size }}">0</span>
+                                <button class="qty-btn" onclick="updateQty('{{ name }}', '{{ size }}', {{ price }}, 1)" {% if info.stocks[size] <= 0 %}disabled{% endif %}>+</button>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -255,17 +311,17 @@ def generer_html(statut_commande=None):
 
         <div class="sticky-footer">
             <div class="summary-layout">
-                <div class="summary-text" id="footerSummary">Aucun produit sélectionné</div>
-                <button class="btn-clear" id="btnClearPanier" onclick="viderPanier()" style="display: none;">Vider</button>
+                <div class="summary-text" id="footerSummary" data-trans="basket_empty">Aucun produit sélectionné</div>
+                <button class="btn-clear" id="btnClearPanier" onclick="viderPanier()" style="display: none;" data-trans="basket_clear">Vider</button>
             </div>
-            <button class="btn-main" id="confirmOrderBtn" onclick="openCheckoutModal()" disabled>Confirmer la commande</button>
+            <button class="btn-main" id="confirmOrderBtn" onclick="openCheckoutModal()" disabled data-trans="btn_confirm">Confirmer la commande</button>
         </div>
 
         <div class="modal-overlay" id="productModalOverlay" onclick="closeModals()">
             <div class="modal" onclick="event.stopPropagation()">
                 <h2 id="modalProductName">Nom</h2>
                 <div class="modal-details" id="modalProductDesc">Détails...</div>
-                <button class="btn-main" onclick="closeModals()">Retour</button>
+                <button class="btn-main" onclick="closeModals()" data-trans="back">Retour</button>
             </div>
         </div>
 
@@ -276,24 +332,111 @@ def generer_html(statut_commande=None):
                     <input type="hidden" id="formCommandeText" name="commande" value="">
                     <input type="hidden" id="formItemsRaw" name="items_raw" value="">
                     
-                    <label for="prenom">Prénom</label>
+                    <label for="prenom" data-trans="lbl_name">Prénom</label>
                     <input type="text" id="prenom" name="prenom" placeholder="Lucas" required>
 
-                    <label for="telephone">Téléphone</label>
+                    <label for="telephone" data-trans="lbl_phone">Téléphone</label>
                     <input type="tel" id="telephone" name="telephone" placeholder="0612345678" required>
 
-                    <label for="adresse">Adresse ou Bar à Marseille</label>
+                    <label for="adresse" data-trans="lbl_address">Adresse ou Bar à Marseille</label>
                     <input type="text" id="adresse" name="adresse" placeholder="Ex: 10 Rue des trois mages" required>
 
-                    <button type="submit" class="btn-main" style="margin-top: 20px;">Vérifier & Commander</button>
+                    <button type="submit" class="btn-main" style="margin-top: 20px;" data-trans="btn_submit">Vérifier & Commander</button>
                 </form>
             </div>
         </div>
 
         <script>
             let panier = {};
+            let currentLang = 'fr';
 
-            // Contrôle de la barrière d'âge
+            const translations = {
+                fr: {
+                    age_title: "🔞 VÉRIFICATION D'ÂGE",
+                    age_desc: "Ce site propose des produits dérivés du CBD réservés aux personnes majeures. Veuillez confirmer votre majorité pour accéder au menu.",
+                    age_yes: "J'AI +18 ANS", age_no: "-18 ANS",
+                    header_sub: "Service de livraison privé & expéditions", header_badge: "📍 Zone : La Plaine / Cours Ju (<1km)",
+                    sec_flowers: "Fleurs", sec_resins: "Résines",
+                    basket_empty: "Aucun produit sélectionné", basket_clear: "Vider",
+                    btn_confirm: "Confirmer la commande", back: "Retour",
+                    lbl_name: "Prénom", lbl_phone: "Téléphone", lbl_address: "Adresse ou Bar à Marseille",
+                    btn_submit: "Vérifier & Commander", close: "Fermer",
+                    status_success_title: "COMMANDE VALIDÉE !", status_success_desc: "Votre commande a bien été transmise.", status_success_time: "⏱️ Temps estimé : 20 à 45 min selon le rush.",
+                    status_out_title: "HORS ZONE", status_out_desc: "Nous livrons uniquement dans un rayon de 1 km autour de La Plaine / Cours Ju.", status_out_btn: "Modifier l'adresse",
+                    status_stock_title: "RUPTURE DE STOCK", status_stock_desc: "Un autre client a validé ce produit juste avant vous. Modifiez votre panier.", status_stock_btn: "Retour au menu"
+                },
+                en: {
+                    age_title: "🔞 AGE VERIFICATION",
+                    age_desc: "This site offers CBD products restricted to adults. Please confirm you are over 18 to access the menu.",
+                    age_yes: "I AM 18+", age_no: "-18",
+                    header_sub: "Private delivery service & shipping", header_badge: "📍 Area: La Plaine / Cours Ju (<1km)",
+                    sec_flowers: "Flowers", sec_resins: "Resins",
+                    basket_empty: "No product selected", basket_clear: "Clear",
+                    btn_confirm: "Confirm Order", back: "Back",
+                    lbl_name: "First Name", lbl_phone: "Phone Number", lbl_address: "Address or Bar in Marseille",
+                    btn_submit: "Verify & Order", close: "Close",
+                    status_success_title: "ORDER CONFIRMED!", status_success_desc: "Your order has been transmitted successfully.", status_success_time: "⏱️ Estimated time: 20 to 45 min depending on rush.",
+                    status_out_title: "OUT OF AREA", status_out_desc: "We only deliver within 1 km around La Plaine / Cours Ju.", status_out_btn: "Change address",
+                    status_stock_title: "OUT OF STOCK", status_stock_desc: "Another customer confirmed this item just before you. Please update your cart.", status_stock_btn: "Back to menu"
+                },
+                es: {
+                    age_title: "🔞 VERIFICACIÓN DE EDAD",
+                    age_desc: "Este sitio ofrece productos de CBD reservados para mayores de edad. Por favor, confirma tu mayoría de edad para acceder.",
+                    age_yes: "SOY MAYOR DE 18", age_no: "-18 AÑOS",
+                    header_sub: "Servicio de entrega privado y envíos", header_badge: "📍 Zona: La Plaine / Cours Ju (<1km)",
+                    sec_flowers: "Flores", sec_resins: "Resinas",
+                    basket_empty: "Ningún producto seleccionado", basket_clear: "Vaciar",
+                    btn_confirm: "Confirmar pedido", back: "Volver",
+                    lbl_name: "Nombre", lbl_phone: "Teléfono", lbl_address: "Dirección o Bar en Marsella",
+                    btn_submit: "Verificar y Pedir", close: "Cerrar",
+                    status_success_title: "¡PEDIDO CONFIRMADO!", status_success_desc: "Su pedido ha sido enviado con éxito.", status_success_time: "⏱️ Tiempo estimado: 20 a 45 min selon demanda.",
+                    status_out_title: "FUERA DE ZONA", status_out_desc: "Solo realizamos entregas en un radio de 1 km alrededor de La Plaine / Cours Ju.", status_out_btn: "Modificar dirección",
+                    status_stock_title: "SIN STOCK", status_stock_desc: "Otro cliente validó este producto justo antes que usted. Modifique su carrito.", status_stock_btn: "Volver al menú"
+                },
+                it: {
+                    age_title: "🔞 VERIFICA DELL'ETÀ",
+                    age_desc: "Questo sito offre prodotti a base di CBD riservati ai maggiorenni. Conferma la tua maggiore età per accedere al menu.",
+                    age_yes: "HO +18 ANNI", age_no: "-18 ANNI",
+                    header_sub: "Servizio di consegna privato e spedizioni", header_badge: "📍 Zona: La Plaine / Cours Ju (<1km)",
+                    sec_flowers: "Fiori", sec_resins: "Resine",
+                    basket_empty: "Nessun prodotto selezionato", basket_clear: "Svuota",
+                    btn_confirm: "Conferma l'ordine", back: "Indietro",
+                    lbl_name: "Nome", lbl_phone: "Telefono", lbl_address: "Indirizzo o Bar a Marsiglia",
+                    btn_submit: "Verifica & Ordina", close: "Chiudi",
+                    status_success_title: "ORDINE CONFERMATO!", status_success_desc: "Il tuo ordine è stato trasmesso con successo.", status_success_time: "⏱️ Tempo stimato: da 20 a 45 minuti a seconda dell'affluenza.",
+                    status_out_title: "FUORI ZONA", status_out_desc: "Consegniamo solo entro un raggio di 1 km intorno a La Plaine / Cours Ju.", status_out_btn: "Modifica l'indirizzo",
+                    status_stock_title: "PRODOTTO ESAURITO", status_stock_desc: "Un altro cliente ha confermato questo produit appena prima di te. Modifica il carrello.", status_stock_btn: "Torna al menu"
+                },
+                de: {
+                    age_title: "🔞 ALTERSPRÜFUNG",
+                    age_desc: "Diese Website bietet CBD-Produkte an, die für Erwachsene reserviert sind. Bitte bestätigen Sie Ihre Volljährigkeit, um das Menü aufzurufen.",
+                    age_yes: "ICH BIN 18+", age_no: "-18 JAHRE",
+                    header_sub: "Privater Lieferservice & Versand", header_badge: "📍 Zone: La Plaine / Cours Ju (<1km)",
+                    sec_flowers: "Blüten", sec_resins: "Harze",
+                    basket_empty: "Kein Produkt ausgewählt", basket_clear: "Leeren",
+                    btn_confirm: "Bestellung bestätigen", back: "Zurück",
+                    lbl_name: "Vorname", lbl_phone: "Telefonnummer", lbl_address: "Adresse oder Bar in Marseille",
+                    btn_submit: "Prüfen & Bestellen", close: "Schließen",
+                    status_success_title: "BESTELLUNG BESTÄTIGT!", status_success_desc: "Ihre Bestellung wurde erfolgreich übermittelt.", status_success_time: "⏱️ Voraussichtliche Zeit: 20 bis 45 Min. je nach Auslastung.",
+                    status_out_title: "AUSSERHALB DER ZONE", status_out_desc: "Wir liefern nur im Umkreis von 1 km um La Plaine / Cours Ju.", status_out_btn: "Adresse ändern",
+                    status_stock_title: "AUSVERKAUFT", status_stock_desc: "Ein anderer Kunde hat dieses Produkt kurz vor Ihnen bestätigt. Bitte ändern Sie Ihren Warenkorb.", status_stock_btn: "Zurück zum Menü"
+                }
+            };
+
+            function changeLanguage(lang) {
+                currentLang = lang;
+                document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                document.querySelectorAll('[data-trans]').forEach(el => {
+                    const key = el.getAttribute('data-trans');
+                    if (translations[lang][key]) {
+                        el.innerHTML = translations[lang][key];
+                    }
+                });
+                updateFooter();
+            }
+
             window.addEventListener('DOMContentLoaded', () => {
                 if (localStorage.getItem('majeur') === 'true') {
                     document.getElementById('ageGateOverlay').style.display = 'none';
@@ -305,26 +448,31 @@ def generer_html(statut_commande=None):
             }
             function refuserAge() { window.location.href = "https://www.google.fr"; }
 
-            function toggleProduct(event, name, size, price) {
-                event.stopPropagation();
+            function updateQty(name, size, price, change) {
                 const key = `${name} (${size})`;
-                if (panier[key]) {
+                if (!panier[key]) {
+                    panier[key] = { qty: 0, price: price, product: name, size: size };
+                }
+                
+                panier[key].qty += change;
+                
+                if (panier[key].qty <= 0) {
                     delete panier[key];
-                    event.target.classList.remove('active');
+                    document.getElementById(`qty-${name}-${size}`).innerText = "0";
+                    document.getElementById(`qty-${name}-${size}`).classList.remove('active');
                 } else {
-                    document.querySelectorAll(`.size-btn[data-product="${name}"]`).forEach(btn => {
-                        btn.classList.remove('active');
-                        delete panier[`${name} (${btn.getAttribute('data-size')})`];
-                    });
-                    panier[key] = { price: price, product: name, size: size };
-                    event.target.classList.add('active');
+                    document.getElementById(`qty-${name}-${size}`).innerText = panier[key].qty;
+                    document.getElementById(`qty-${name}-${size}`).classList.add('active');
                 }
                 updateFooter();
             }
 
             function viderPanier() {
                 panier = {};
-                document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.qty-val').forEach(el => {
+                    el.innerText = "0";
+                    el.classList.remove('active');
+                });
                 updateFooter();
             }
 
@@ -332,18 +480,23 @@ def generer_html(statut_commande=None):
                 const keys = Object.keys(panier);
                 const mainBtn = document.getElementById('confirmOrderBtn');
                 const clearBtn = document.getElementById('btnClearPanier');
+                
                 if (keys.length === 0) {
-                    document.getElementById('footerSummary').innerHTML = "Aucun produit sélectionné";
+                    document.getElementById('footerSummary').innerHTML = translations[currentLang].basket_empty;
                     mainBtn.setAttribute('disabled', 'true');
                     clearBtn.style.display = 'none';
                     return;
                 }
+                
                 let total = 0, itemsText = [];
                 for (let item in panier) { 
-                    total += panier[item].price; 
-                    itemsText.push(`${item} <span>[${panier[item].price}€]</span>`); 
+                    let itemTotal = panier[item].price * panier[item].qty;
+                    total += itemTotal; 
+                    itemsText.push(`${panier[item].qty}x ${item} <span>[${itemTotal}€]</span>`); 
                 }
-                document.getElementById('footerSummary').innerHTML = `Panier : ${itemsText.join(' + ')} — Total : <span>${total}€</span>`;
+                
+                const basketWord = currentLang === 'fr' ? 'Panier' : (currentLang === 'en' ? 'Cart' : (currentLang === 'es' ? 'Carrito' : (currentLang === 'it' ? 'Carrello' : 'Warenkorb')));
+                document.getElementById('footerSummary').innerHTML = `${basketWord} : ${itemsText.join(' + ')} — Total : <span>${total}€</span>`;
                 mainBtn.removeAttribute('disabled');
                 clearBtn.style.display = 'inline-block';
             }
@@ -357,10 +510,14 @@ def generer_html(statut_commande=None):
             function openCheckoutModal() {
                 document.getElementById('productModalOverlay').style.display = 'none';
                 let total = 0, itemsText = [], rawItems = [];
+                
                 for (let item in panier) { 
-                    total += panier[item].price; 
-                    itemsText.push(`${item} [${panier[item].price}€]`);
-                    rawItems.push(`${panier[item].product}:${panier[item].size}`);
+                    let itemTotal = panier[item].price * panier[item].qty;
+                    total += itemTotal; 
+                    itemsText.push(`${panier[item].qty}x ${item} [${itemTotal}€]`);
+                    for(let i=0; i<panier[item].qty; i++) {
+                        rawItems.push(`${panier[item].product}:${panier[item].size}`);
+                    }
                 }
                 document.getElementById('checkoutModalTitle').innerText = `Total : ${total}€`;
                 document.getElementById('formCommandeText').value = itemsText.join(' / ') + ` (Total: ${total}€)`;
@@ -378,6 +535,11 @@ def generer_html(statut_commande=None):
     """
     return HTML_FORM
 
+# Route pour servir le fichier du logo localement
+@app.route('/logo.png')
+def serve_logo():
+    return send_from_directory(os.getcwd(), 'logo.png')
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     statut = None
@@ -391,12 +553,18 @@ def home():
         liste_items = items_raw.split(",") if items_raw else []
         erreur_stock_detectee = False
         
+        besoin_stock = {}
         for item in liste_items:
             if ":" in item:
                 prod, taille = item.split(":")
-                if STOCKS.get(prod, {}).get("stocks", {}).get(taille, 0) <= 0:
-                    erreur_stock_detectee = True
-                    break
+                key = f"{prod}:{taille}"
+                besoin_stock[key] = besoin_stock.get(key, 0) + 1
+
+        for key, qte in besoin_stock.items():
+            prod, taille = key.split(":")
+            if STOCKS.get(prod, {}).get("stocks", {}).get(taille, 0) < qte:
+                erreur_stock_detectee = True
+                break
 
         if erreur_stock_detectee:
             statut = "erreur_stock"
@@ -426,7 +594,6 @@ def home():
                             try: total_prix = int(choix_commande.split("Total: ")[1].replace("€)", ""))
                             except: total_prix = 0
 
-                        # Enregistrement compta locale CSV
                         enregistrer_vente_anonyme(" + ".join(items_vendus), total_prix)
 
                         lien_itineraire = f"https://www.google.com/maps/dir/{CENTRE_LAT},{CENTRE_LON}/{client_lat},{client_lon}"
@@ -445,7 +612,9 @@ def home():
                         statut = "succes"
                     else: statut = "hors_zone"
                 else: statut = "hors_zone"
-            except: statut = "succes"
+            except Exception as e: 
+                print(e)
+                statut = "succes"
 
     return render_template_string(generer_html(statut), stocks=STOCKS, statut=statut)
 
