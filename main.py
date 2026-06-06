@@ -18,37 +18,67 @@ RAYON_MAX_KM = 1.0
 
 FICHIER_COMPTA = "compta.csv"
 
-# 📦 STOCKS & INFOS PRODUITS
+# 📦 STOCKS, INFOS & TRADUCTIONS DES VARIÉTÉS
 STOCKS = {
     "Amnesia Haze": {
         "stocks": {"2g": 10, "5g": 5, "10g": 3},
         "culture": "Hydroponique",
-        "details": "💧 Culture : HYDROPONIQUE<br>📊 Taux CBD : ~17%<br>🧠 Effets : Énergisant, clarté mentale, idéal pour la journée.<br>🍋 Arômes : Notes prononcées de citron et de pin sauvage.",
-        "image": "https://images.unsplash.com/photo-1603909223429-69bb7101f420?w=500&auto=format&fit=crop&q=60"
+        "image": "https://images.unsplash.com/photo-1603909223429-69bb7101f420?w=500&auto=format&fit=crop&q=60",
+        "details": {
+            "fr": "💧 Culture : HYDROPONIQUE<br>📊 Taux CBD : ~17%<br>🧠 Effets : Énergisant, clarté mentale, idéal pour la journée.<br>🍋 Arômes : Notes prononcées de citron et de pin sauvage.",
+            "en": "💧 Grow: HYDROPONIC<br>📊 CBD Rate: ~17%<br>🧠 Effects: Energizing, mental clarity, ideal for daytime.<br>🍋 Flavors: Sharp notes of lemon and wild pine.",
+            "es": "💧 Cultivo: HIDROPÓNICO<br>📊 Tasa CBD: ~17%<br>🧠 Efectos: Energizante, claridad mental, ideal para el día.<br>🍋 Aromas: Notas pronunciadas de limón y pino silvestre.",
+            "it": "💧 Coltivazione: IDROPONICA<br>📊 Tasso CBD: ~17%<br>🧠 Effetti: Energizzante, chiarezza mentale, ideale per il giorno.<br>🍋 Aromi: Note pronunciate di limone e pino selvatico.",
+            "de": "💧 Anbau: HYDROPONISCH<br>📊 CBD-Anteil: ~17%<br>🧠 Wirkung: Energetisierend, geistige Klarheit, ideal für den Tag.<br>🍋 Aromen: Ausgeprägte Zitronen- und Wildkiefernoten."
+        }
     },
     "Orange Bud": {
         "stocks": {"2g": 8, "5g": 4, "10g": 2},
         "culture": "Greenhouse",
-        "details": "☀️ Culture : GREENHOUSE<br>📊 Taux CBD : ~12%<br>🧘 Effets : Relaxation douce, anti-stress naturel.<br>🍊 Arômes : Parfum d'agrumes sucrés et d'orange mûre.",
-        "image": "https://images.unsplash.com/photo-1536625803734-e4304899580b?w=500&auto=format&fit=crop&q=60"
+        "image": "https://images.unsplash.com/photo-1536625803734-e4304899580b?w=500&auto=format&fit=crop&q=60",
+        "details": {
+            "fr": "☀️ Culture : GREENHOUSE<br>📊 Taux CBD : ~12%<br>🧘 Effets : Relaxation douce, anti-stress naturel.<br>🍊 Arômes : Parfum d'agrumes sucrés et d'orange mûre.",
+            "en": "☀️ Grow: GREENHOUSE<br>📊 CBD Rate: ~12%<br>🧘 Effects: Gentle relaxation, natural stress relief.<br>🍊 Flavors: Sweet citrus and ripe orange scent.",
+            "es": "☀️ Cultivo: GREENHOUSE<br>📊 Tasa CBD: ~12%<br>🧘 Efectos: Relajación suave, alivio natural del estrés.<br>🍊 Aromas: Aroma a cítricos dulces y naranja madura.",
+            "it": "☀️ Coltivazione: GREENHOUSE<br>📊 Tasso CBD: ~12%<br>🧘 Effetti: Rilassamento delicato, antistress naturale.<br>🍊 Aromi: Profumo di agrumi dolci e arancia matura.",
+            "de": "☀️ Anbau: GEWÄCHSHAUS<br>📊 CBD-Anteil: ~12%<br>🧘 Wirkung: Sanfte Entspannung, natürlicher Stressabbau.<br>🍊 Aromen: Süßer Zitrus- und reifer Orangenduft."
+        }
     },
     "Cookie Kush": {
         "stocks": {"2g": 12, "5g": 6, "10g": 4},
         "culture": "Indoor",
-        "details": "🌿 Culture : INDOOR (Haut de gamme)<br>📊 Taux CBD : ~15%<br>💤 Effets : Apaisement profond, idéal pour la fin de soirée.<br>🍪 Arômes : Saveur gourmande de biscuit et de terre chocolatée.",
-        "image": "https://images.unsplash.com/photo-1568243161214-9728877bc9d7?w=500&auto=format&fit=crop&q=60"
+        "image": "https://images.unsplash.com/photo-1568243161214-9728877bc9d7?w=500&auto=format&fit=crop&q=60",
+        "details": {
+            "fr": "🌿 Culture : INDOOR (Haut de gamme)<br>📊 Taux CBD : ~15%<br>💤 Effets : Apaisement profond, idéal pour la fin de soirée.<br>🍪 Arômes : Saveur gourmande de biscuit et de terre chocolatée.",
+            "en": "🌿 Grow: INDOOR (Premium)<br>📊 CBD Rate: ~15%<br>💤 Effects: Deep soothing, ideal for late evening.<br>🍪 Flavors: Gourmet biscuit and chocolatey earth taste.",
+            "es": "🌿 Cultivo: INTERIOR (Premium)<br>📊 Tasa CBD: ~15%<br>💤 Efectos: Calmante profundo, ideal para el final de la noche.<br>🍪 Aromas: Sabor gourmet a galleta y tierra achocolatada.",
+            "it": "🌿 Coltivazione: INDOOR (Premium)<br>📊 Tasso CBD: ~15%<br>💤 Effetti: Profondo sollievo, ideale per la tarda serata.<br>🍪 Aromi: Gusto goloso di biscotto e terra cioccolatosa.",
+            "de": "🌿 Anbau: INDOOR (Premium)<br>📊 CBD-Anteil: ~15%<br>💤 Wirkung: Tiefe Beruhigung, ideal für den späten Abend.<br>🍪 Aromen: Feiner Keksgeschmack und schokoladige Erde."
+        }
     },
     "Skuff - Polen": {
         "stocks": {"2g": 15, "5g": 7, "10g": 3},
         "culture": "Dry Sift",
-        "details": "📍 Type : Dry Sift traditionnel<br>📊 Taux CBD : ~25%<br>🍁 Texture : Sablonneuse et malléable.<br>✨ Effets : Relaxation intense et durable.",
-        "image": "https://images.unsplash.com/photo-1556928045-16f7f2319f3c?w=500&auto=format&fit=crop&q=60"
+        "image": "https://images.unsplash.com/photo-1556928045-16f7f2319f3c?w=500&auto=format&fit=crop&q=60",
+        "details": {
+            "fr": "📍 Type : Dry Sift traditionnel<br>📊 Taux CBD : ~25%<br>🍁 Texture : Sablonneuse et malléable.<br>✨ Effets : Relaxation intense et durable.",
+            "en": "📍 Type: Traditional Dry Sift<br>📊 CBD Rate: ~25%<br>🍁 Texture: Sandy and malleable.<br>✨ Effects: Intense and long-lasting relaxation.",
+            "es": "📍 Tipo: Dry Sift tradicional<br>📊 Tasa CBD: ~25%<br>🍁 Textura: Arenosa y maleable.<br>✨ Efectos: Relajación intensa y duradera.",
+            "it": "📍 Tipo: Dry Sift tradizionale<br>📊 Tasso CBD: ~25%<br>🍁 Texture: Sabbiosa e malleabile.<br>✨ Effetti: Rilassamento intenso e duraturo.",
+            "de": "📍 Typ: Traditionelles Dry Sift<br>📊 CBD-Anteil: ~25%<br>🍁 Textur: Sandig und formbar.<br>✨ Wirkung: Intensive und lang anhaltende Entspannung."
+        }
     },
     "Creamy Piatella": {
         "stocks": {"2g": 5, "5g": 3, "10g": 1},
         "culture": "Premium Cold Cure",
-        "details": "❄️ Bubble Hash Ice-O-Lator<br>📊 Taux CBD : ~70% (Ultra Concentré)<br>🧪 Process : Affinage à froid (Cold Cure).<br>🍯 Texture : Crémeuse comme du beurre, pureté absolue.",
-        "image": "https://images.unsplash.com/photo-1611075883654-e0b04fb85dc4?w=500&auto=format&fit=crop&q=60"
+        "image": "https://images.unsplash.com/photo-1611075883654-e0b04fb85dc4?w=500&auto=format&fit=crop&q=60",
+        "details": {
+            "fr": "❄️ Bubble Hash Ice-O-Lator<br>📊 Taux CBD : ~70% (Ultra Concentré)<br>🧪 Process : Affinage à froid (Cold Cure).<br>🍯 Texture : Crémeuse comme du beurre, pureté absolue.",
+            "en": "❄️ Bubble Hash Ice-O-Lator<br>📊 CBD Rate: ~70% (Ultra Concentrated)<br>🧪 Process: Cold Cure ripening.<br>🍯 Texture: Creamy like butter, absolute purity.",
+            "es": "❄️ Bubble Hash Ice-O-Lator<br>📊 Tasa CBD: ~70% (Ultra Concentrado)<br>🧪 Proceso: Maduración en frío (Cold Cure).<br>🍯 Textura: Cremosa como la mantequilla, pureza absoluta.",
+            "it": "❄️ Bubble Hash Ice-O-Lator<br>📊 Tasso CBD: ~70% (Ultra Concentrato)<br>🧪 Processo: Maturazione a freddo (Cold Cure).<br>🍯 Texture: Cremosa come il burro, purezza assoluta.",
+            "de": "❄️ Bubble Hash Ice-O-Lator<br>📊 CBD-Anteil: ~70% (Ultra-konzentriert)<br>🧪 Prozess: Kalte Reifung (Cold Cure).<br>🍯 Textur: Cremig wie Butter, absolute Reinheit."
+        }
     }
 }
 
@@ -100,7 +130,6 @@ def generer_html(statut_commande=None):
                 align-items: center;
             }
             
-            /* Sélecteur de Langue */
             .lang-selector {
                 position: absolute;
                 top: 20px;
@@ -250,7 +279,7 @@ def generer_html(statut_commande=None):
         <div class="section-title" data-trans="sec_flowers">Fleurs</div>
         <div class="grid">
             {% for name, info in stocks.items() if info.culture in ['Hydroponique', 'Greenhouse', 'Indoor'] %}
-            <div class="card" onclick="openProductModal('{{ name }}', `{{ info.details|safe }}`)">
+            <div class="card" onclick="openProductModal('{{ name }}', {{ info.details|tojson|safe }})">
                 <img src="{{ info.image }}" class="card-img" alt="{{ name }}">
                 <div class="card-content">
                     <div>
@@ -280,7 +309,7 @@ def generer_html(statut_commande=None):
         <div class="section-title" data-trans="sec_resins">Résines</div>
         <div class="grid">
             {% for name, info in stocks.items() if info.culture in ['Dry Sift', 'Premium Cold Cure'] %}
-            <div class="card" onclick="openProductModal('{{ name }}', `{{ info.details|safe }}`)">
+            <div class="card" onclick="openProductModal('{{ name }}', {{ info.details|tojson|safe }})">
                 <img src="{{ info.image }}" class="card-img" alt="{{ name }}">
                 <div class="card-content">
                     <div>
@@ -349,6 +378,7 @@ def generer_html(statut_commande=None):
         <script>
             let panier = {};
             let currentLang = 'fr';
+            let activeProductTranslations = null; // Stocke temporairement les textes du produit ouvert
 
             const translations = {
                 fr: {
@@ -411,7 +441,7 @@ def generer_html(statut_commande=None):
                     age_title: "🔞 ALTERSPRÜFUNG",
                     age_desc: "Diese Website bietet CBD-Produkte an, die für Erwachsene reserviert sind. Bitte bestätigen Sie Ihre Volljährigkeit, um das Menü aufzurufen.",
                     age_yes: "ICH BIN 18+", age_no: "-18 JAHRE",
-                    header_sub: "Privater Lieferservice & Versand", header_badge: "📍 Zone: La Plaine / Cours Ju (<1km)",
+                    header_sub: "Privater Lieferservice & Versand", header_badge: "📍 Zone: La Plaine / Cours Ju Umkreis (<1km)",
                     sec_flowers: "Blüten", sec_resins: "Harze",
                     basket_empty: "Kein Produkt ausgewählt", basket_clear: "Leeren",
                     btn_confirm: "Bestellung bestätigen", back: "Zurück",
@@ -425,7 +455,7 @@ def generer_html(statut_commande=None):
 
             function changeLanguage(lang) {
                 currentLang = lang;
-                document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.lang-selector .lang-btn').forEach(btn => btn.classList.remove('active'));
                 event.target.classList.add('active');
                 
                 document.querySelectorAll('[data-trans]').forEach(el => {
@@ -434,6 +464,12 @@ def generer_html(statut_commande=None):
                         el.innerHTML = translations[lang][key];
                     }
                 });
+
+                // Si une popup de produit est actuellement ouverte, on met à jour son texte à la volée
+                if (activeProductTranslations && activeProductTranslations[lang]) {
+                    document.getElementById('modalProductDesc').innerHTML = activeProductTranslations[lang];
+                }
+
                 updateFooter();
             }
 
@@ -501,9 +537,11 @@ def generer_html(statut_commande=None):
                 clearBtn.style.display = 'inline-block';
             }
 
-            function openProductModal(name, desc) {
+            function openProductModal(name, detailsObj) {
+                activeProductTranslations = detailsObj; // On garde l'objet des langues en mémoire
                 document.getElementById('modalProductName').innerText = name;
-                document.getElementById('modalProductDesc').innerHTML = desc;
+                // On affiche la description dans la langue actuellement sélectionnée
+                document.getElementById('modalProductDesc').innerHTML = detailsObj[currentLang] || detailsObj['fr'];
                 document.getElementById('productModalOverlay').style.display = 'flex';
             }
 
@@ -528,6 +566,7 @@ def generer_html(statut_commande=None):
             function closeModals() {
                 document.getElementById('productModalOverlay').style.display = 'none';
                 document.getElementById('checkoutModalOverlay').style.display = 'none';
+                activeProductTranslations = null;
             }
         </script>
     </body>
@@ -535,7 +574,6 @@ def generer_html(statut_commande=None):
     """
     return HTML_FORM
 
-# Route pour servir le fichier du logo localement
 @app.route('/logo.png')
 def serve_logo():
     return send_from_directory(os.getcwd(), 'logo.png')
@@ -594,6 +632,7 @@ def home():
                             try: total_prix = int(choix_commande.split("Total: ")[1].replace("€)", ""))
                             except: total_prix = 0
 
+                        # Enregistrement compta locale
                         enregistrer_vente_anonyme(" + ".join(items_vendus), total_prix)
 
                         lien_itineraire = f"https://www.google.com/maps/dir/{CENTRE_LAT},{CENTRE_LON}/{client_lat},{client_lon}"
